@@ -9,7 +9,24 @@ set domainPart to item 2 of (text items of urlString)
 set AppleScript's text item delimiters to ".com"
 set mainPart to item 1 of (text items of domainPart)
 set AppleScript's text item delimiters to "."
-set searchString to last item of (text items of mainPart)
+
+-- Initialize subdomainString
+set subdomainString to ""
+
+-- Extract subdomain if present
+set domainParts to text items of mainPart
+if (count of domainParts) > 1 then
+    set subdomainString to item 1 of domainParts
+    if subdomainString is "www" then
+        set subdomainString to ""
+    else
+        -- Construct the new searchString including subdomain
+        set searchString to subdomainString & "." & item -1 of domainParts
+    end if
+else
+    set searchString to item -1 of domainParts
+end if
+
 set AppleScript's text item delimiters to ""
 
 -- Handle special case for Twitter's single letter domain
@@ -17,8 +34,13 @@ if searchString is "x" then
     set searchString to "/x.com"
 end if
 
--- Debug: Display searchString
- display dialog "searchString: " & searchString
+-- slides.google.com redirects to docs.google
+if searchString is "slides.google" then
+    set searchString to "docs.google.com/presentation"
+end if
+
+-- Debug: Display searchString and subdomainString
+ display dialog "searchString: " & searchString & ", subdomainString: " & subdomainString
 
 -- Function to perform case-insensitive search
 on containsIgnoreCase(theString, searchString)
